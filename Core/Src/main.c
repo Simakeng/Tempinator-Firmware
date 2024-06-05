@@ -1,30 +1,30 @@
 /**
  * @file main.c
  * @author simakeng (simakeng@outlook.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2024-05-31
- * 
+ *
  * *****************************************************************************
  * @copyright Copyright (C) E15 Studio 2024
- * 
+ *
  * This program is FREE software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License version 3 as published by the 
+ * the terms of the GNU General Public License version 3 as published by the
  * Free Software Foundation.
- * This program is distributed in the hope that it will be useful, but WITHOUT 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc.,
- * 675 Mass Ave, Cambridge, MA 02139, USA. Or you can visit the link below to 
- * read the license online, or you can find a copy of the license in the root 
+ * 675 Mass Ave, Cambridge, MA 02139, USA. Or you can visit the link below to
+ * read the license online, or you can find a copy of the license in the root
  * directory of this project named "COPYING" file.
- * 
+ *
  * https://www.gnu.org/licenses/gpl-3.0.html
- * 
+ *
  * *****************************************************************************
- * 
+ *
  */
 
 /* USER CODE BEGIN Header */
@@ -35,7 +35,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <uart_log.h>
+#include <spi_oled.h>
+#include <debug/print.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -126,22 +128,44 @@ int main(void)
   MX_TIM3_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  uint16_t adc_vals[32];
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_vals, 32);
 
-  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  uart_log_init();
+  print(INFO, "System started.\n");
 
-  TIM3->CNT = 40000 - 10 * 4; // 推迟 10us 复位
-  TIM1->CNT = 0;
+  spi_oled_init(&oled);
+  print(INFO, "OLED Init done!\n");
 
-  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+  ssd1306_clear_gram(&oled, 0x00);
+  ssd1306_display_on(&oled);
+  ssd1306_set_offset_by_addr(&oled, 0);
+  for (int i = 0; i < 1024; i++)
+  {
+    uint8_t data = i;
+    ssd1306_append_gram(&oled, &data, 1);
+  }
+
+  // uint16_t adc_vals[32];
+  // HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_vals, 32);
+
+  // HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+
+  // TIM3->CNT = 40000 - 10 * 4; // 推迟 10us 复位
+  // TIM1->CNT = 0;
+
+  // HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+  // HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    ssd1306_clear_gram(&oled, 0xFF);
+    HAL_Delay(1000);
+
+    ssd1306_clear_gram(&oled, 0x00);
+    HAL_Delay(1000);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -286,7 +310,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;

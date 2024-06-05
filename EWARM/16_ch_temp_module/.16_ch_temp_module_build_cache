@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BuildDb>
+    <Tool>
+        <Name>linker</Name>
+        <Parent>
+            <Path>C:\Users\FNC09684\Desktop\16_ch_temp_module\EWARM\16_ch_temp_module\Exe\16_ch_temp_module.out</Path>
+            <Output>
+                <Path>C:\Users\FNC09684\Desktop\16_ch_temp_module\EWARM\16_ch_temp_module\List\16_ch_temp_module.map</Path>
+            </Output>
+        </Parent>
+    </Tool>
+</BuildDb>
