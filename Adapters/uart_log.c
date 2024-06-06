@@ -27,13 +27,11 @@
  * 
  */
 
+#include "usart.h"
+
 #include <string.h>
-#include <stm32g0xx_hal.h>
 
 #include "uart_log.h"
-
-
-extern UART_HandleTypeDef huart1;
 
 static int32_t uart1_dev_putc(int32_t c)
 {
