@@ -19,7 +19,7 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 675 Mass Ave, Cambridge, MA 02139, USA. Or you can visit the link below to
  * read the license online, or you can find a copy of the license in the root
- * directory of this project named "COPYING" file.
+ * directory of this project named "LICENSE" file.
  *
  * https://www.gnu.org/licenses/gpl-3.0.html
  *
@@ -38,6 +38,7 @@
 #include <uart_log.h>
 #include <spi_oled.h>
 #include <debug/print.h>
+#include <math/random.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -135,14 +136,10 @@ int main(void)
   spi_oled_init(&oled);
   print(INFO, "OLED Init done!\n");
 
+  rand_lcg_t rand = LCG_DEFAULT_INIT(12345);
+
   ssd1306_clear_gram(&oled, 0x00);
   ssd1306_display_on(&oled);
-  ssd1306_set_offset_by_addr(&oled, 0);
-  for (int i = 0; i < 1024; i++)
-  {
-    uint8_t data = i;
-    ssd1306_append_gram(&oled, &data, 1);
-  }
 
   // uint16_t adc_vals[32];
   // HAL_ADC_Start_DMA(&hadc1, (uint32_t *)adc_vals, 32);
@@ -158,13 +155,26 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+  uint8_t clear_color = 0xff;
+
   while (1)
   {
-    ssd1306_clear_gram(&oled, 0xFF);
-    HAL_Delay(1000);
+    clear_color = ~clear_color;
+    ssd1306_clear_gram(&oled, clear_color);
+    HAL_Delay(100);
 
-    ssd1306_clear_gram(&oled, 0x00);
-    HAL_Delay(1000);
+    ssd1306_set_offset_by_addr(&oled, 0);
+    for (int j = 0; j < 8; j++)
+    {
+      ssd1306_set_offset(&oled, 0, j);
+      for (int i = 0; i < 128; i++)
+      {
+        uint8_t data = rand_lcg_next(&rand) & 0xFF;
+        ssd1306_append_gram(&oled, &data, 1);
+        HAL_Delay(1);
+      }
+    }
 
     /* USER CODE END WHILE */
 

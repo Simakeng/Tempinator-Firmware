@@ -1230,5 +1230,11 @@
                 </file>
             </group>
         </group>
+        <group>
+            <name>math</name>
+            <file>
+                <name>$PROJ_DIR$\..\Lib\src\math\random.c</name>
+            </file>
+        </group>
     </group>
 </project>
