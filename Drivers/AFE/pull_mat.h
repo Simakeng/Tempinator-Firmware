@@ -29,16 +29,28 @@
  *
  */
 
+/******************************************************************************/
+/*                               INCLUDE FILES                                */
+/******************************************************************************/
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+
+/******************************************************************************/
+/*                              MACRO DEFINITIONS                             */
+/******************************************************************************/
+
+#ifndef __AMUX_H_FILE__
+#define __AMUX_H_FILE__
 
 #ifndef CONFIG_PULL_MATRIX_CHANNEL_COUNT
 #define CONFIG_PULL_MATRIX_CHANNEL_COUNT 16
 #endif
 
-#ifndef __AMUX_H_FILE__
-#define __AMUX_H_FILE__
+/******************************************************************************/
+/*                            CONSTANT DEFINITIONS                            */
+/******************************************************************************/
 
 /**
  * @brief Enumeration of the pull down resistor values.
@@ -46,11 +58,15 @@
 typedef enum
 {
     AMUX_NO_PULL = 0,
-    AMUX_PULL_1K,
-    AMUX_PULL_10K,
-    AMUX_PULL_100K,
-    AMUX_PULL_1M
+    AMUX_PULL_1K = 0x01,
+    AMUX_PULL_10K = 0x02,
+    AMUX_PULL_100K = 0x04,
+    AMUX_PULL_1M = 0x08,
 } afe_pull_e;
+
+/******************************************************************************/
+/*                              TYPE DEFINITIONS                              */
+/******************************************************************************/
 
 /**
  * @brief Structure to hold the HAL functions for the pull down resistor matrix.
@@ -96,7 +112,7 @@ typedef struct
      * @param data The data to write.
      * @param len The length of the data to write.
      */
-    int (*spi_write)(void *data, uint32_t len);
+    int (*spi_write)(const void *data, uint32_t len);
 } afe_pull_matrix_hal_t;
 
 /**
@@ -105,9 +121,18 @@ typedef struct
 typedef struct
 {
     afe_pull_matrix_hal_t hal;
-    afe_pull_e pull_status[CONFIG_PULL_MATRIX_CHANNEL_COUNT];
-    uint8_t io_buffer[CONFIG_PULL_MATRIX_CHANNEL_COUNT / 2];
+
+    struct
+    {
+        uint8_t lo : 4;
+        uint8_t hi : 4;
+    } pulls[CONFIG_PULL_MATRIX_CHANNEL_COUNT / 2];
+
 } afe_pull_matrix_t;
+
+/******************************************************************************/
+/*                         PUBLIC FUNCTION DEFINITIONS                        */
+/******************************************************************************/
 
 /**
  * @brief Initialize the pull down resistor matrix.
@@ -120,7 +145,7 @@ int afe_pull_matrix_init(afe_pull_matrix_t *matrix, afe_pull_matrix_hal_t *hal);
 
 /**
  * @brief Get the pull down resistor value for a channel.
- * 
+ *
  * @param matrix the matrix instance.
  * @param channel the channel to get the pull down resistor value for.
  * @param pull the pull down resistor value.
@@ -131,7 +156,7 @@ int afe_pull_matrix_get(afe_pull_matrix_t *matrix, uint8_t channel,
 
 /**
  * @brief Set the pull down resistor value for a channel.
- * 
+ *
  * @param matrix the matrix instance.
  * @param channel the channel to set the pull down resistor value for.
  * @param pull the pull down resistor value.
@@ -142,7 +167,7 @@ int afe_pull_matrix_set(afe_pull_matrix_t *matrix, uint8_t channel,
 
 /**
  * @brief Clear the pull down resistor value for all channels.
- * 
+ *
  * @param matrix the matrix instance.
  * @return int <0 on error, 0 on success.
  */
@@ -150,10 +175,38 @@ int afe_pull_matrix_clear(afe_pull_matrix_t *matrix);
 
 /**
  * @brief Apply the pull down resistor values to the matrix.
- * 
+ *
  * @param matrix the matrix instance.
  * @return int <0 on error, 0 on success.
  */
 int afe_pull_matrix_apply(afe_pull_matrix_t *matrix);
+
+/**
+ * @brief Enable the output of the pull down resistor matrix.
+ *
+ * @param matrix the matrix instance.
+ * @return int <0 on error, 0 on success.
+ */
+int afe_pull_matrix_enable(afe_pull_matrix_t *matrix);
+
+/**
+ * @brief Disable the output of the pull down resistor matrix.
+ *
+ * @param matrix the matrix instance.
+ * @return int <0 on error, 0 on success.
+ */
+int afe_pull_matrix_disable(afe_pull_matrix_t *matrix);
+
+/**
+ * @brief Set the pull down resistor value for all channels.
+ *
+ * @param matrix the matrix instance.
+ * @param pull the pull down resistor value. @see afe_pull_e
+ * @return int <0 on error, 0 on success.
+ */
+int afe_pull_matrix_set_all(afe_pull_matrix_t *matrix, afe_pull_e pull);
+/******************************************************************************/
+/*                                 END OF FILE                                */
+/******************************************************************************/
 
 #endif // !#ifndef __AMUX_H_FILE__
