@@ -104,6 +104,8 @@ int main(void)
 
   afe_pull_matrix_set(&afe_mat, 0, AMUX_PULL_10K);
   afe_pull_matrix_set(&afe_mat, 3, AMUX_PULL_10K);
+  afe_pull_matrix_apply(&afe_mat);
+  afe_pull_matrix_enable(&afe_mat);
 
   rand_lcg_t rand = LCG_DEFAULT_INIT(12345);
 

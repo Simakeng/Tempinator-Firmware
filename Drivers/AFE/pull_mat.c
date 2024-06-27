@@ -67,12 +67,11 @@
 /*                        PRIVATE FUNCTION DEFINITIONS                        */
 /******************************************************************************/
 
-/******************************************************************************/
-/*                      PUBLIC FUNCTION IMPLEMENTATIONS                       */
-/******************************************************************************/
+static inline uint32_t translate_channel(uint32_t ch);
+static inline bool is_at_high_half(uint32_t ch);
 
 /******************************************************************************/
-/*                     PRIVATE FUNCTION IMPLEMENTATIONS                       */
+/*                      PUBLIC FUNCTION IMPLEMENTATIONS                       */
 /******************************************************************************/
 
 int afe_pull_matrix_init(afe_pull_matrix_t *matrix, afe_pull_matrix_hal_t *hal)
@@ -123,12 +122,11 @@ int afe_pull_matrix_get(afe_pull_matrix_t *matrix, uint8_t channel,
     {
         return E_INVALID_ARGUMENT;
     }
-    uint32_t index = channel / 2;
-    bool is_high = ((channel % 2) == 1);
+    uint32_t index = translate_channel(channel) / 2;
 
     uint32_t pull_value = AMUX_NO_PULL;
 
-    if (is_high)
+    if (is_at_high_half(channel))
         pull_value = matrix->pulls[index].hi;
     else
         pull_value = matrix->pulls[index].lo;
@@ -148,10 +146,9 @@ int afe_pull_matrix_set(afe_pull_matrix_t *matrix, uint8_t channel,
         return E_INVALID_ARGUMENT;
     }
 
-    uint32_t index = channel / 2;
-    bool is_high = ((channel % 2) == 1);
+    uint32_t index = translate_channel(channel) / 2;
 
-    if (is_high)
+    if (is_at_high_half(channel))
         matrix->pulls[index].hi = pull;
     else
         matrix->pulls[index].lo = pull;
@@ -214,6 +211,21 @@ int afe_pull_matrix_apply(afe_pull_matrix_t *matrix)
     return ALL_OK;
 }
 
+/******************************************************************************/
+/*                     PRIVATE FUNCTION IMPLEMENTATIONS                       */
+/******************************************************************************/
+static inline uint32_t translate_channel(uint32_t ch)
+{
+    if (ch > CONFIG_PULL_MATRIX_CHANNEL_COUNT)
+        ch %= CONFIG_PULL_MATRIX_CHANNEL_COUNT;
+
+    return CONFIG_PULL_MATRIX_CHANNEL_COUNT - 1 - ch;
+}
+
+static inline bool is_at_high_half(uint32_t ch)
+{
+    return (ch % 2) == 1;
+}
 /******************************************************************************/
 /*                                 END OF FILE                                */
 /******************************************************************************/
